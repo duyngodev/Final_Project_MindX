@@ -1,14 +1,18 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
 app.use(express.json());
+const uri = process.env.MONGODB_URI;
+const port = process.env.PORT || 3000;
 
 /** hash function */
 async function hashPassword(pass) {
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(parseInt(process.env.SALT));
   const hash = await bcrypt.hash(pass, salt);
   return hash;
 }
@@ -29,7 +33,6 @@ const students = [
 ];
 
 app.get("/", (req, res) => {
-  console.log({ pass, hash });
   return res.send("Welcome");
 });
 
@@ -80,10 +83,13 @@ app.post("/api/signup", async (req, res) => {
     password: await hashPassword(req.body.password),
   };
   students.push(result);
-  console.log(result.password); // ccomment
-  return res.status(200).send(JSON.stringify(result.password));
+  return res.status(200).send("Sign up successfully");
 });
 
-console.log("port is", process.env.PORT);
-const port = process.env.PORT || 3000;
-app.listen(port, console.log("listening on ", port));
+mongoose
+  .connect(uri)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(port, () => console.log("listening on ", port));
+  })
+  .catch(() => console.log("error connecting to MongoDB"));
