@@ -19,7 +19,7 @@ function findOneAccountAndUpdate({
     .select("-password -_id")
     .then((updatedAccount) => {
       if (!updatedAccount)
-        return res.status(404).send("Account not found, update failed");
+        return res.status(404).send("Account details not found, update failed");
 
       return res.status(200).send({
         message: "updated successfully",
